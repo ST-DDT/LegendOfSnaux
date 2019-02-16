@@ -74,6 +74,11 @@ public class SimplexNoise
 		}
 	}
 
+	public static double Scale(double value, double min, double max)
+	{
+		return min + ((value + 1) / 2) * (max - min);
+	}
+
 	//2D OpenSimplex Noise.
 	public double Eval(double x, double y)
 	{

@@ -36,6 +36,14 @@ public class Block : MonoBehaviour
 		meshRenderer.material = Resources.Load<Material>("VertexColoredWithShadow");
 
 		//InitMesh(Enum.GetValues(typeof(MeshFaceDirection)).Cast<MeshFaceDirection>().ToList());
+		//InitMesh(new List<MeshFaceDirection> {
+		//	MeshFaceDirection.FRONT,
+		//	MeshFaceDirection.RIGHT,
+		//	MeshFaceDirection.BACK,
+		//	MeshFaceDirection.LEFT,
+		//	MeshFaceDirection.TOP,
+		//	MeshFaceDirection.BOTTOM
+		//});
 
 		//meshRenderer.materials = new Material[2] {
 		//    Resources.Load<Material>("Dirt"),
@@ -77,9 +85,6 @@ public class Block : MonoBehaviour
 			// Front
 			vertices.Add(_000);
 			vertices.Add(_010);
-			vertices.Add(_100);
-
-			vertices.Add(_010);
 			vertices.Add(_110);
 			vertices.Add(_100);
 		}
@@ -88,9 +93,6 @@ public class Block : MonoBehaviour
 		{
 			// Right
 			vertices.Add(_100);
-			vertices.Add(_110);
-			vertices.Add(_101);
-
 			vertices.Add(_110);
 			vertices.Add(_111);
 			vertices.Add(_101);
@@ -101,9 +103,6 @@ public class Block : MonoBehaviour
 			// Back
 			vertices.Add(_101);
 			vertices.Add(_111);
-			vertices.Add(_001);
-
-			vertices.Add(_111);
 			vertices.Add(_011);
 			vertices.Add(_001);
 		}
@@ -112,9 +111,6 @@ public class Block : MonoBehaviour
 		{
 			// Left
 			vertices.Add(_001);
-			vertices.Add(_011);
-			vertices.Add(_000);
-
 			vertices.Add(_011);
 			vertices.Add(_010);
 			vertices.Add(_000);
@@ -125,9 +121,6 @@ public class Block : MonoBehaviour
 			// Top
 			vertices.Add(_010);
 			vertices.Add(_011);
-			vertices.Add(_110);
-
-			vertices.Add(_011);
 			vertices.Add(_111);
 			vertices.Add(_110);
 		}
@@ -137,19 +130,21 @@ public class Block : MonoBehaviour
 			// Bottom
 			vertices.Add(_100);
 			vertices.Add(_101);
-			vertices.Add(_000);
-
-			vertices.Add(_000);
-			vertices.Add(_101);
 			vertices.Add(_001);
+			vertices.Add(_000);
 		}
 
 		mesh.vertices = vertices.ToArray();
 
 		List<int> triangles = new List<int>();
-		for (int i = 0; i < vertices.Count; i++)
+		for (int i = 0; i < faceDirections.Count; i++)
 		{
-			triangles.Add(i);
+			triangles.Add(i * 4 + 0);
+			triangles.Add(i * 4 + 1);
+			triangles.Add(i * 4 + 2);
+			triangles.Add(i * 4 + 0);
+			triangles.Add(i * 4 + 2);
+			triangles.Add(i * 4 + 3);
 		}
 
 		mesh.triangles = triangles.ToArray();
@@ -159,7 +154,7 @@ public class Block : MonoBehaviour
 
 		if (renderFront)
 		{
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				normals[normalIndex] = Vector3.back;
 				normalIndex++;
@@ -168,7 +163,7 @@ public class Block : MonoBehaviour
 
 		if (renderRight)
 		{
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				normals[normalIndex] = Vector3.right;
 				normalIndex++;
@@ -177,7 +172,7 @@ public class Block : MonoBehaviour
 
 		if (renderBack)
 		{
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				normals[normalIndex] = Vector3.forward;
 				normalIndex++;
@@ -186,7 +181,7 @@ public class Block : MonoBehaviour
 
 		if (renderLeft)
 		{
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				normals[normalIndex] = Vector3.left;
 				normalIndex++;
@@ -195,7 +190,7 @@ public class Block : MonoBehaviour
 
 		if (renderTop)
 		{
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				normals[normalIndex] = Vector3.up;
 				normalIndex++;
@@ -204,7 +199,7 @@ public class Block : MonoBehaviour
 
 		if (renderBottom)
 		{
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				normals[normalIndex] = Vector3.down;
 				normalIndex++;
@@ -213,20 +208,17 @@ public class Block : MonoBehaviour
 
 		mesh.normals = normals;
 
-		//Vector2[] uv = new Vector2[vertices.Count];
+		Vector2[] uv = new Vector2[vertices.Count];
 
-		//int faces = faceDirections.Count;
-		//for (int i = 0; i < faceDirections.Count; i++)
-		//{
-		//    uv[i * faces + 0] = new Vector2(0, 0);
-		//    uv[i * faces + 1] = new Vector2(1, 0);
-		//    uv[i * faces + 2] = new Vector2(0, 1);
-		//    uv[i * faces + 3] = new Vector2(0, 1);
-		//    uv[i * faces + 4] = new Vector2(1, 0);
-		//    uv[i * faces + 5] = new Vector2(1, 1);
-		//}
+		for (int i = 0; i < faceDirections.Count; i += 4)
+		{
+			uv[i + 0] = new Vector2(0, 0);
+			uv[i + 1] = new Vector2(1, 0);
+			uv[i + 2] = new Vector2(1, 1);
+			uv[i + 3] = new Vector2(0, 1);
+		}
 
-		//mesh.uv = uv;
+		mesh.uv = uv;
 
 		Color32[] colors = new Color32[vertices.Count];
 		int colorIndex = 0;
@@ -236,7 +228,7 @@ public class Block : MonoBehaviour
 
 		if (renderFront)
 		{
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				colors[colorIndex] = dirt;
 				colorIndex++;
@@ -245,7 +237,7 @@ public class Block : MonoBehaviour
 
 		if (renderRight)
 		{
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				colors[colorIndex] = dirt;
 				colorIndex++;
@@ -254,7 +246,7 @@ public class Block : MonoBehaviour
 
 		if (renderBack)
 		{
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				colors[colorIndex] = dirt;
 				colorIndex++;
@@ -263,7 +255,7 @@ public class Block : MonoBehaviour
 
 		if (renderLeft)
 		{
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				colors[colorIndex] = dirt;
 				colorIndex++;
@@ -272,7 +264,7 @@ public class Block : MonoBehaviour
 
 		if (renderTop)
 		{
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				colors[colorIndex] = grass;
 				colorIndex++;
@@ -281,7 +273,7 @@ public class Block : MonoBehaviour
 
 		if (renderBottom)
 		{
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				colors[colorIndex] = dirt;
 				colorIndex++;

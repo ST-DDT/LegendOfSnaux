@@ -10,7 +10,7 @@ public class Chunk : MonoBehaviour
 		return min + ((value + 1) / 2) * (max - min);
 	}
 
-	public void Awake()
+	public void Start()
 	{
 		Dictionary<Vector3Int, bool> chunkNoiseData = new Dictionary<Vector3Int, bool>();
 
@@ -23,7 +23,7 @@ public class Chunk : MonoBehaviour
 				//float noise = Mathf.PerlinNoise((transform.position.x + x) / 16.0f, (transform.position.z + z) / 16.0f);
 				//double scaledNoise = Scale(noise, 0, 3);
 				double noise = simplexNoise.Eval((transform.position.x + x) / 16.0, (transform.position.z + z) / 16.0);
-				double scaledNoise = Scale(noise, 0, 3);
+				double scaledNoise = Scale(noise, 0, 10);
 				for (int y = 0; y < scaledNoise; y++)
 				{
 					chunkNoiseData.Add(new Vector3Int(x, y, z), scaledNoise > y);

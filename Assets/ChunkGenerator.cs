@@ -8,15 +8,14 @@ public class ChunkGenerator : MonoBehaviour
 
 	void Awake()
 	{
-		for (int x = 0; x < 3; x++)
+		for (int x = 0; x < 4; x++)
 		{
-			for (int z = 0; z < 3; z++)
+			for (int z = 0; z < 4; z++)
 			{
 				GameObject go = new GameObject();
 				Chunk chunk = go.AddComponent<Chunk>();
 				go.transform.parent = gameObject.transform;
 				go.transform.localPosition = new Vector3(x * 16, 0, z * 16);
-				chunk.Awake();
 
 				chunks.Add(new Vector3Int(x, 0, z), chunk);
 			}

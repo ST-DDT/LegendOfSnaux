@@ -1,9 +1,9 @@
 /*
  * Source: https://gist.github.com/KdotJPG/b1270127455a94ac5d19
- * 
+ *
  * OpenSimplex Noise in Java.
  * by Kurt Spencer
- * 
+ *
  * v1.1 (October 5, 2014)
  * - Added 2D and 4D implementations.
  * - Proper gradient sets for all dimensions, from a

@@ -3,6 +3,73 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+public struct BlockID : IEquatable<BlockID>
+{
+	public readonly static BlockID up = new BlockID(0, 1, 0);
+	public readonly static BlockID down = new BlockID(0, -1, 0);
+	public readonly static BlockID left = new BlockID(-1, 0, 0);
+	public readonly static BlockID right = new BlockID(1, 0, 0);
+	public readonly static BlockID forward = new BlockID(0, 0, 1);
+	public readonly static BlockID back = new BlockID(0, 0, -1);
+
+	public readonly int x;
+	public readonly int y;
+	public readonly int z;
+
+	public BlockID(int x, int y, int z)
+	{
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	}
+
+	public override bool Equals(object obj)
+	{
+		return obj is BlockID blockId &&
+			   x == blockId.x &&
+			   y == blockId.y &&
+			   z == blockId.z;
+	}
+
+	public bool Equals(BlockID other)
+	{
+		return x == other.x && y == other.y && z == other.z;
+	}
+
+	public override int GetHashCode()
+	{
+		int hashCode = x;
+		hashCode = hashCode * 397 ^ y;
+		hashCode = hashCode * 397 ^ z;
+		return hashCode;
+	}
+
+	public static bool operator ==(BlockID left, BlockID right)
+	{
+		return left.Equals(right);
+	}
+
+	public static bool operator !=(BlockID left, BlockID right)
+	{
+		return !left.Equals(right);
+	}
+
+	public static BlockID operator +(BlockID left, BlockID right)
+	{
+		return new BlockID(left.x + right.x, left.y + right.y, left.z + right.z);
+	}
+
+	public static implicit operator Vector3Int(BlockID blockId)
+	{
+		return new Vector3Int(blockId.x, blockId.y, blockId.z);
+	}
+
+	public static implicit operator Vector3(BlockID blockId)
+	{
+		return new Vector3(blockId.x, blockId.y, blockId.z);
+	}
+}
+
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class Block : MonoBehaviour
 {
@@ -20,7 +87,7 @@ public class Block : MonoBehaviour
 	private MeshRenderer meshRenderer;
 
 	public Chunk Chunk { get; internal set; }
-	public Vector3Int BlockID { get; internal set; }
+	public BlockID BlockID { get; internal set; }
 
 	private void Awake()
 	{

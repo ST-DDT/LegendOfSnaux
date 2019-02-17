@@ -36,9 +36,9 @@ public class ChunkGenerator : MonoBehaviour
 	{
 		chunks.Clear();
 
-		for (int x = -2; x <= 2; x++)
+		for (int x = -2; x <= 5; x++)
 		{
-			for (int z = -2; z <= 2; z++)
+			for (int z = -2; z <= 5; z++)
 			{
 				GameObject go = new GameObject($"Chunk x:{x}, y:{0}, z:{z}");
 				Chunk chunk = go.AddComponent<Chunk>();

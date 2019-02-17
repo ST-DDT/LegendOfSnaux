@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-//[ExecuteInEditMode]
+[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class Block : MonoBehaviour
 {
 	public enum MeshFaceDirection
@@ -19,24 +19,18 @@ public class Block : MonoBehaviour
 	private MeshFilter meshFilter;
 	private MeshRenderer meshRenderer;
 
-	public void Awake()
-	{
-		if (!GetComponent<MeshFilter>())
-		{
-			gameObject.AddComponent<MeshFilter>();
-		}
-		meshFilter = GetComponent<MeshFilter>();
+	public Chunk Chunk { get; internal set; }
+	public Vector3Int BlockID { get; internal set; }
 
-		if (!GetComponent<MeshRenderer>())
-		{
-			gameObject.AddComponent<MeshRenderer>();
-		}
+	private void Awake()
+	{
+		meshFilter = GetComponent<MeshFilter>();
 		meshRenderer = GetComponent<MeshRenderer>();
 
 		meshRenderer.material = Resources.Load<Material>("VertexColoredWithShadow");
 
-		//InitMesh(Enum.GetValues(typeof(MeshFaceDirection)).Cast<MeshFaceDirection>().ToList());
-		//InitMesh(new List<MeshFaceDirection> {
+		//InitializeMesh(Enum.GetValues(typeof(MeshFaceDirection)).Cast<MeshFaceDirection>().ToList());
+		//InitializeMesh(new List<MeshFaceDirection> {
 		//	MeshFaceDirection.FRONT,
 		//	MeshFaceDirection.RIGHT,
 		//	MeshFaceDirection.BACK,
@@ -51,8 +45,9 @@ public class Block : MonoBehaviour
 		//};
 	}
 
-	public void InitMesh(List<MeshFaceDirection> faceDirections)
+	public void InitializeMesh(List<MeshFaceDirection> faceDirections)
 	{
+		meshFilter.mesh?.Clear();
 		Mesh mesh = new Mesh();
 		meshFilter.mesh = mesh;
 
@@ -281,17 +276,5 @@ public class Block : MonoBehaviour
 		}
 
 		mesh.colors32 = colors;
-	}
-
-	// Start is called before the first frame update
-	void Start()
-	{
-
-	}
-
-	// Update is called once per frame
-	void Update()
-	{
-
 	}
 }

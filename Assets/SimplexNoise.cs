@@ -1,9 +1,9 @@
 /*
  * Source: https://gist.github.com/KdotJPG/b1270127455a94ac5d19
- * 
+ *
  * OpenSimplex Noise in Java.
  * by Kurt Spencer
- * 
+ *
  * v1.1 (October 5, 2014)
  * - Added 2D and 4D implementations.
  * - Proper gradient sets for all dimensions, from a
@@ -72,6 +72,11 @@ public class SimplexNoise
 			permGradIndex3D[i] = (short)((perm[i] % (gradients3D.Length / 3)) * 3);
 			source[r] = source[i];
 		}
+	}
+
+	public static double Scale(double value, double min, double max)
+	{
+		return min + ((value + 1) / 2) * (max - min);
 	}
 
 	//2D OpenSimplex Noise.

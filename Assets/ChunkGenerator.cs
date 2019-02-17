@@ -1,36 +1,59 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class ChunkGenerator : MonoBehaviour
 {
-	Dictionary<Vector3Int, Chunk> chunks = new Dictionary<Vector3Int, Chunk>();
+	public const byte CHUNK_SIZE = 16;
 
-	void Awake()
+	private readonly Dictionary<Vector3Int, Chunk> chunks = new Dictionary<Vector3Int, Chunk>();
+
+	public SimplexNoise NoiseGenerator { get; private set; }
+
+	public long seed = 0;
+
+	private void Awake()
 	{
-		for (int x = 0; x < 4; x++)
-		{
-			for (int z = 0; z < 4; z++)
-			{
-				GameObject go = new GameObject();
-				Chunk chunk = go.AddComponent<Chunk>();
-				go.transform.parent = gameObject.transform;
-				go.transform.localPosition = new Vector3(x * 16, 0, z * 16);
+		Debug.Log($"Initiated Chunk Generator with seed {seed}");
+		NoiseGenerator = new SimplexNoise(seed);
+	}
 
-				chunks.Add(new Vector3Int(x, 0, z), chunk);
+	void Start()
+	{
+		Initialize();
+	}
+
+	private void LateUpdate()
+	{
+		foreach (Chunk chunk in chunks.Values)
+		{
+			chunk.Initialize();
+		}
+	}
+
+	private void Initialize()
+	{
+		chunks.Clear();
+
+		for (int x = -2; x <= 2; x++)
+		{
+			for (int z = -2; z <= 2; z++)
+			{
+				GameObject go = new GameObject($"Chunk x:{x}, y:{0}, z:{z}");
+				Chunk chunk = go.AddComponent<Chunk>();
+				chunk.ChunkGenerator = this;
+				chunk.ChunkID = new Vector3Int(x, 0, z);
+				go.transform.parent = gameObject.transform;
+				go.transform.localPosition = new Vector3(x * CHUNK_SIZE, 0, z * CHUNK_SIZE);
+
+				chunks.Add(chunk.ChunkID, chunk);
 			}
 		}
 	}
 
-	// Start is called before the first frame update
-	void Start()
+	public bool TryGetChunk(Vector3Int chunkId, out Chunk chunk)
 	{
-
-	}
-
-	// Update is called once per frame
-	void Update()
-	{
-
+		return this.chunks.TryGetValue(chunkId, out chunk);
 	}
 }

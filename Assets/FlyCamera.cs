@@ -8,13 +8,13 @@ public class FlyCamera : MonoBehaviour
 {
 
 	/*
-    Writen by Windexglow 11-13-10.  Use it, edit it, steal it I don't care.  
+    Writen by Windexglow 11-13-10.  Use it, edit it, steal it I don't care.
     Converted to C# 27-02-13 - no credit wanted.
     Extended by Mahelita 08-01-18.
         Added up and down movement using e and q, respectively.
         Adjusted parameters to fit my needs.
-    Simple flycam I made, since I couldn't find any others made public.  
-    Made simple to use (drag and drop, done) for regular keyboard layout  
+    Simple flycam I made, since I couldn't find any others made public.
+    Made simple to use (drag and drop, done) for regular keyboard layout
     wasd : basic movement
     qe : Move camera down or up, respectively
     shift : Makes camera accelerate
@@ -47,7 +47,7 @@ public class FlyCamera : MonoBehaviour
 			lastMouse = new Vector3(transform.eulerAngles.x + lastMouse.x, transform.eulerAngles.y + lastMouse.y, 0);
 			transform.eulerAngles = lastMouse;
 			lastMouse = Input.mousePosition;
-			//Mouse  camera angle done.  
+			//Mouse  camera angle done.
 		}
 
 		//Keyboard commands

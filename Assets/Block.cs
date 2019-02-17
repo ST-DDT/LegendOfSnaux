@@ -20,6 +20,7 @@ public class Block : MonoBehaviour
 	private MeshRenderer meshRenderer;
 
 	public Chunk Chunk { get; internal set; }
+	public Vector3Int BlockID { get; internal set; }
 
 	private void Awake()
 	{
@@ -46,6 +47,7 @@ public class Block : MonoBehaviour
 
 	public void InitializeMesh(List<MeshFaceDirection> faceDirections)
 	{
+		meshFilter.mesh?.Clear();
 		Mesh mesh = new Mesh();
 		meshFilter.mesh = mesh;
 

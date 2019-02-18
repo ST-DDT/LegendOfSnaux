@@ -351,17 +351,19 @@ public class Chunk : MonoBehaviour
 
 		mesh.normals = normals;
 
-		//Vector2[] uv = new Vector2[vertices.Count];
+		Vector2[] uv = new Vector2[vertices.Count];
 
-		//for (int i = 0; i < faceDirections.Count; i += 4)
-		//{
-		//	uv[i + 0] = new Vector2(0, 0);
-		//	uv[i + 1] = new Vector2(1, 0);
-		//	uv[i + 2] = new Vector2(1, 1);
-		//	uv[i + 3] = new Vector2(0, 1);
-		//}
+		for (int i = 0; i < faceDirections.Count; i ++)
+		{
+			if (faceDirections[i] != MeshFaceDirection.TOP) { 
+				uv[i*4 + 0] = new Vector2(0, 0);
+				uv[i*4 + 1] = new Vector2(1, 0);
+				uv[i*4 + 2] = new Vector2(1, 1);
+				uv[i*4 + 3] = new Vector2(0, 1);
+			}
+		}
 
-		//mesh.uv = uv;
+		mesh.uv = uv;
 
 		Color32[] colors = new Color32[vertices.Count];
 		int colorIndex = 0;

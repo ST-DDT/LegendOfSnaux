@@ -36,20 +36,32 @@ public class ChunkGenerator : MonoBehaviour
 	{
 		chunks.Clear();
 
-		for (int x = -2; x <= 2; x++)
+		for (int x = -2; x <= 25; x++)
 		{
-			for (int z = -2; z <= 2; z++)
+			for (int z = -2; z <= 25; z++)
 			{
-				GameObject go = new GameObject($"Chunk x:{x}, y:{0}, z:{z}");
-				Chunk chunk = go.AddComponent<Chunk>();
-				chunk.ChunkGenerator = this;
-				chunk.ChunkID = new Vector3Int(x, 0, z);
-				go.transform.parent = gameObject.transform;
-				go.transform.localPosition = new Vector3(x * CHUNK_SIZE, 0, z * CHUNK_SIZE);
-
-				chunks.Add(chunk.ChunkID, chunk);
+				GenerateChunk(new Vector3Int(x, 0, z));
 			}
 		}
+	}
+
+	public Chunk GenerateChunk(Vector3Int position)
+	{
+		if (TryGetChunk(position, out Chunk chunk))
+		{
+			return chunk;
+		}
+
+		GameObject go = new GameObject($"Chunk x:{position.x}, y:{position.y}, z:{position.z}");
+		chunk = go.AddComponent<Chunk>();
+		chunk.ChunkGenerator = this;
+		chunk.ChunkID = position;
+		go.transform.parent = gameObject.transform;
+		go.transform.localPosition = new Vector3(position.x * CHUNK_SIZE, position.y * CHUNK_SIZE, position.z * CHUNK_SIZE);
+
+		chunks.Add(chunk.ChunkID, chunk);
+
+		return chunk;
 	}
 
 	public bool TryGetChunk(Vector3Int chunkId, out Chunk chunk)

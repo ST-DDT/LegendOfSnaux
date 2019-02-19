@@ -8,6 +8,7 @@ public class ChunkGenerator : MonoBehaviour
 	public const byte CHUNK_SIZE = 16;
 
 	private readonly Dictionary<Vector3Int, Chunk> chunks = new Dictionary<Vector3Int, Chunk>();
+	private readonly Queue<Chunk> chunkLoadingQueue = new Queue<Chunk>();
 
 	public SimplexNoise NoiseGenerator { get; private set; }
 
@@ -19,16 +20,17 @@ public class ChunkGenerator : MonoBehaviour
 		NoiseGenerator = new SimplexNoise(seed);
 	}
 
-	void Start()
+	private void Start()
 	{
 		Initialize();
 	}
 
 	private void LateUpdate()
 	{
-		foreach (Chunk chunk in chunks.Values)
+		if (chunkLoadingQueue.Count > 0)
 		{
-			chunk.Initialize();
+			Chunk chunk = chunkLoadingQueue.Dequeue();
+			chunk.Dirty = true;
 		}
 	}
 
@@ -36,11 +38,12 @@ public class ChunkGenerator : MonoBehaviour
 	{
 		chunks.Clear();
 
-		for (int x = -2; x <= 25; x++)
+		for (int x = -2; x <= 20; x++)
 		{
-			for (int z = -2; z <= 25; z++)
+			for (int z = -2; z <= 20; z++)
 			{
-				GenerateChunk(new Vector3Int(x, 0, z));
+				Chunk chunk = GenerateChunk(new Vector3Int(x, 0, z));
+				chunkLoadingQueue.Enqueue(chunk);
 			}
 		}
 	}

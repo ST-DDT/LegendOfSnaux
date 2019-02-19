@@ -16,7 +16,6 @@ public enum MeshFaceDirection
 public class Chunk : MonoBehaviour
 {
 	private Dictionary<Vector3Int, Block> data = new Dictionary<Vector3Int, Block>();
-	private bool initialized = false;
 
 	private MeshFilter meshFilter;
 	private MeshRenderer meshRenderer;
@@ -24,6 +23,7 @@ public class Chunk : MonoBehaviour
 
 	public ChunkGenerator ChunkGenerator { get; internal set; }
 	public Vector3Int ChunkID { get; internal set; }
+	public bool Dirty { get; set; } = false;
 
 	private void Awake()
 	{
@@ -61,35 +61,40 @@ public class Chunk : MonoBehaviour
 		}
 	}
 
-	public void Initialize()
+	private void LateUpdate()
 	{
-		if (!initialized)
+		if (Dirty == false)
 		{
-			initialized = true;
-			List<CombineInstance> meshes = new List<CombineInstance>();
+			// No updates todo
+			return;
+		}
 
-			foreach (KeyValuePair<Vector3Int, Block> item in data)
+		UpdateMesh();
+
+		Dirty = false;
+	}
+
+	private void UpdateMesh()
+	{
+		List<CombineInstance> meshes = new List<CombineInstance>();
+
+		foreach (KeyValuePair<Vector3Int, Block> item in data)
+		{
+			Vector3Int blockId = item.Key;
+			Block block = item.Value;
+
+			List<MeshFaceDirection> faceDirections = new List<MeshFaceDirection>();
+			Block neighbor;
+
+			// Check Front
+			Vector3Int v3iBack = Vector3Int.RoundToInt(Vector3.back);
+			if (!data.TryGetValue(blockId + v3iBack, out neighbor))
 			{
-				Vector3Int blockId = item.Key;
-				Block block = item.Value;
-
-				List<MeshFaceDirection> faceDirections = new List<MeshFaceDirection>();
-				Block neighbor;
-
-				// Check Front
-				Vector3Int v3iBack = Vector3Int.RoundToInt(Vector3.back);
-				if (!data.TryGetValue(blockId + v3iBack, out neighbor))
+				if (blockId.z == 0)
 				{
-					if (blockId.z == 0)
+					if (this.ChunkGenerator.TryGetChunk(this.ChunkID + v3iBack, out Chunk chunk))
 					{
-						if (this.ChunkGenerator.TryGetChunk(this.ChunkID + v3iBack, out Chunk chunk))
-						{
-							if (!chunk.data.TryGetValue(new Vector3Int(blockId.x, blockId.y, ChunkGenerator.CHUNK_SIZE - 1), out neighbor))
-							{
-								faceDirections.Add(MeshFaceDirection.FRONT);
-							}
-						}
-						else
+						if (!chunk.data.TryGetValue(new Vector3Int(blockId.x, blockId.y, ChunkGenerator.CHUNK_SIZE - 1), out neighbor))
 						{
 							faceDirections.Add(MeshFaceDirection.FRONT);
 						}
@@ -99,20 +104,20 @@ public class Chunk : MonoBehaviour
 						faceDirections.Add(MeshFaceDirection.FRONT);
 					}
 				}
-
-				// Check Right
-				if (!data.TryGetValue(blockId + Vector3Int.right, out neighbor))
+				else
 				{
-					if (blockId.x == ChunkGenerator.CHUNK_SIZE - 1)
+					faceDirections.Add(MeshFaceDirection.FRONT);
+				}
+			}
+
+			// Check Right
+			if (!data.TryGetValue(blockId + Vector3Int.right, out neighbor))
+			{
+				if (blockId.x == ChunkGenerator.CHUNK_SIZE - 1)
+				{
+					if (this.ChunkGenerator.TryGetChunk(this.ChunkID + Vector3Int.right, out Chunk chunk))
 					{
-						if (this.ChunkGenerator.TryGetChunk(this.ChunkID + Vector3Int.right, out Chunk chunk))
-						{
-							if (!chunk.data.TryGetValue(new Vector3Int(0, blockId.y, blockId.z), out neighbor))
-							{
-								faceDirections.Add(MeshFaceDirection.RIGHT);
-							}
-						}
-						else
+						if (!chunk.data.TryGetValue(new Vector3Int(0, blockId.y, blockId.z), out neighbor))
 						{
 							faceDirections.Add(MeshFaceDirection.RIGHT);
 						}
@@ -122,21 +127,21 @@ public class Chunk : MonoBehaviour
 						faceDirections.Add(MeshFaceDirection.RIGHT);
 					}
 				}
-
-				// Check Back
-				Vector3Int v3iForward = Vector3Int.RoundToInt(Vector3.forward);
-				if (!data.TryGetValue(blockId + v3iForward, out neighbor))
+				else
 				{
-					if (blockId.z == ChunkGenerator.CHUNK_SIZE - 1)
+					faceDirections.Add(MeshFaceDirection.RIGHT);
+				}
+			}
+
+			// Check Back
+			Vector3Int v3iForward = Vector3Int.RoundToInt(Vector3.forward);
+			if (!data.TryGetValue(blockId + v3iForward, out neighbor))
+			{
+				if (blockId.z == ChunkGenerator.CHUNK_SIZE - 1)
+				{
+					if (this.ChunkGenerator.TryGetChunk(this.ChunkID + v3iForward, out Chunk chunk))
 					{
-						if (this.ChunkGenerator.TryGetChunk(this.ChunkID + v3iForward, out Chunk chunk))
-						{
-							if (!chunk.data.TryGetValue(new Vector3Int(blockId.x, blockId.y, 0), out neighbor))
-							{
-								faceDirections.Add(MeshFaceDirection.BACK);
-							}
-						}
-						else
+						if (!chunk.data.TryGetValue(new Vector3Int(blockId.x, blockId.y, 0), out neighbor))
 						{
 							faceDirections.Add(MeshFaceDirection.BACK);
 						}
@@ -146,20 +151,20 @@ public class Chunk : MonoBehaviour
 						faceDirections.Add(MeshFaceDirection.BACK);
 					}
 				}
-
-				// Check Left
-				if (!data.TryGetValue(blockId + Vector3Int.left, out neighbor))
+				else
 				{
-					if (blockId.x == 0)
+					faceDirections.Add(MeshFaceDirection.BACK);
+				}
+			}
+
+			// Check Left
+			if (!data.TryGetValue(blockId + Vector3Int.left, out neighbor))
+			{
+				if (blockId.x == 0)
+				{
+					if (this.ChunkGenerator.TryGetChunk(this.ChunkID + Vector3Int.left, out Chunk chunk))
 					{
-						if (this.ChunkGenerator.TryGetChunk(this.ChunkID + Vector3Int.left, out Chunk chunk))
-						{
-							if (!chunk.data.TryGetValue(new Vector3Int(ChunkGenerator.CHUNK_SIZE - 1, blockId.y, blockId.z), out neighbor))
-							{
-								faceDirections.Add(MeshFaceDirection.LEFT);
-							}
-						}
-						else
+						if (!chunk.data.TryGetValue(new Vector3Int(ChunkGenerator.CHUNK_SIZE - 1, blockId.y, blockId.z), out neighbor))
 						{
 							faceDirections.Add(MeshFaceDirection.LEFT);
 						}
@@ -169,34 +174,39 @@ public class Chunk : MonoBehaviour
 						faceDirections.Add(MeshFaceDirection.LEFT);
 					}
 				}
-
-				// Check Top
-				if (!data.TryGetValue(blockId + Vector3Int.up, out neighbor))
+				else
 				{
-					faceDirections.Add(MeshFaceDirection.TOP);
-				}
-
-				// Check Bottom
-				// Currently not in use
-				//if (!data.TryGetValue(blockId + Vector3Int.down, out neighbor))
-				//{
-				//	faceDirections.Add(MeshFaceDirection.BOTTOM);
-				//}
-
-				if (faceDirections.Count > 0)
-				{
-					CombineInstance ci = new CombineInstance
-					{
-						mesh = CreateBlockMesh(faceDirections, block.BlockID)
-					};
-					meshes.Add(ci);
+					faceDirections.Add(MeshFaceDirection.LEFT);
 				}
 			}
 
-			meshFilter.mesh.CombineMeshes(meshes.ToArray(), true, false, false);
+			// Check Top
+			if (!data.TryGetValue(blockId + Vector3Int.up, out neighbor))
+			{
+				faceDirections.Add(MeshFaceDirection.TOP);
+			}
 
-			meshCollider.sharedMesh = meshFilter.mesh;
+			// Check Bottom
+			// Currently not in use
+			//if (!data.TryGetValue(blockId + Vector3Int.down, out neighbor))
+			//{
+			//	faceDirections.Add(MeshFaceDirection.BOTTOM);
+			//}
+
+			if (faceDirections.Count > 0)
+			{
+				CombineInstance ci = new CombineInstance
+				{
+					mesh = CreateBlockMesh(faceDirections, block.BlockID)
+				};
+				meshes.Add(ci);
+			}
 		}
+
+		meshFilter.mesh.Clear();
+		meshFilter.mesh.CombineMeshes(meshes.ToArray(), true, false, false);
+
+		meshCollider.sharedMesh = meshFilter.mesh;
 	}
 
 	private static Mesh CreateBlockMesh(List<MeshFaceDirection> faceDirections, Vector3 offset)

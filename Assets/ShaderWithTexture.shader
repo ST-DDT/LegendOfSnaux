@@ -24,6 +24,7 @@ Shader "Custom/ShaderWithTexture"
 				//user defined variables
 				uniform float4 _Color;
 				uniform sampler2D _MainTex;
+				uniform float2 uv_MainTex;
 				uniform float4 _MainTex_ST;
 				uniform sampler2D _NormalMap;
 				uniform float4 _NormalMap_ST;

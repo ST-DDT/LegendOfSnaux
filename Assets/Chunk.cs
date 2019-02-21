@@ -12,7 +12,7 @@ public enum MeshFaceDirection
 	BOTTOM
 }
 
-[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
+[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
 public class Chunk : MonoBehaviour
 {
 	private Dictionary<Vector3Int, Block> data = new Dictionary<Vector3Int, Block>();
@@ -20,6 +20,7 @@ public class Chunk : MonoBehaviour
 
 	private MeshFilter meshFilter;
 	private MeshRenderer meshRenderer;
+	private MeshCollider meshCollider;
 
 	public ChunkGenerator ChunkGenerator { get; internal set; }
 	public Vector3Int ChunkID { get; internal set; }
@@ -28,6 +29,7 @@ public class Chunk : MonoBehaviour
 	{
 		meshFilter = GetComponent<MeshFilter>();
 		meshRenderer = GetComponent<MeshRenderer>();
+		meshCollider = GetComponent<MeshCollider>();
 
 		meshRenderer.material = Resources.Load<Material>("VertexColoredWithShadow");
 	}
@@ -192,6 +194,8 @@ public class Chunk : MonoBehaviour
 			}
 
 			meshFilter.mesh.CombineMeshes(meshes.ToArray(), true, false, false);
+
+			meshCollider.sharedMesh = meshFilter.mesh;
 		}
 	}
 

@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -70,6 +69,12 @@ public class Chunk : MonoBehaviour
 		UpdateMesh();
 
 		Dirty = false;
+	}
+
+	private void OnDestroy()
+	{
+		Debug.Log($"Destroy Chunk {ChunkID}");
+		meshFilter.mesh.Clear();
 	}
 
 	private void UpdateMesh()

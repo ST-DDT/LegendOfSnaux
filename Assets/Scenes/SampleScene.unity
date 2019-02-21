@@ -312,6 +312,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 0
+  target: {fileID: 0}
 --- !u!4 &964553182
 Transform:
   m_ObjectHideFlags: 0

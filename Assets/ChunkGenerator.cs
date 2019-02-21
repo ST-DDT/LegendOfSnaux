@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,10 +8,13 @@ public class ChunkGenerator : MonoBehaviour
 
 	private readonly Dictionary<Vector3Int, Chunk> chunks = new Dictionary<Vector3Int, Chunk>();
 	private readonly Queue<Chunk> chunkLoadingQueue = new Queue<Chunk>();
+	private Vector3 oldTargetPosition;
+	private bool targetPositionTrigger = true;
 
 	public SimplexNoise NoiseGenerator { get; private set; }
 
 	public long seed = 0;
+	public Transform target;
 
 	private void Awake()
 	{
@@ -22,7 +24,59 @@ public class ChunkGenerator : MonoBehaviour
 
 	private void Start()
 	{
-		Initialize();
+		oldTargetPosition = target.position;
+	}
+
+	private void Update()
+	{
+		if (Vector3.Distance(oldTargetPosition, target.position) > CHUNK_SIZE / 2.0)
+		{
+			oldTargetPosition = target.position;
+			targetPositionTrigger = true;
+		}
+
+		if (targetPositionTrigger == true)
+		{
+			targetPositionTrigger = false;
+
+			Vector3 playerChunkPosition = target.position / CHUNK_SIZE;
+
+			// Unload Chunks that are too far away
+			List<Vector3Int> unloadChunks = new List<Vector3Int>();
+			foreach (KeyValuePair<Vector3Int, Chunk> item in chunks)
+			{
+				Vector3Int pos = item.Key;
+				Chunk chunk = item.Value;
+				if (Vector3.Distance(pos, playerChunkPosition) > 16)
+				{
+					unloadChunks.Add(pos);
+					Component.Destroy(chunk);
+				}
+			}
+			foreach (Vector3Int chunkId in unloadChunks)
+			{
+				chunks.Remove(chunkId);
+			}
+			chunkLoadingQueue.Clear();
+
+			// Generate new Chunks
+			int minX = (int)playerChunkPosition.x - 8;
+			int maxX = (int)playerChunkPosition.x + 8;
+			int minZ = (int)playerChunkPosition.z - 8;
+			int maxZ = (int)playerChunkPosition.z + 8;
+			for (int x = minX; x < maxX; x++)
+			{
+				for (int z = minZ; z < maxZ; z++)
+				{
+					Chunk chunk = GenerateChunk(new Vector3Int(x, 0, z));
+					/*
+					 * TODO: Maybe we can check if the chunk is already loaded,
+					 * so we do not need to update it
+					 */
+					chunkLoadingQueue.Enqueue(chunk);
+				}
+			}
+		}
 	}
 
 	private void LateUpdate()
@@ -31,20 +85,6 @@ public class ChunkGenerator : MonoBehaviour
 		{
 			Chunk chunk = chunkLoadingQueue.Dequeue();
 			chunk.Dirty = true;
-		}
-	}
-
-	private void Initialize()
-	{
-		chunks.Clear();
-
-		for (int x = -2; x <= 20; x++)
-		{
-			for (int z = -2; z <= 20; z++)
-			{
-				Chunk chunk = GenerateChunk(new Vector3Int(x, 0, z));
-				chunkLoadingQueue.Enqueue(chunk);
-			}
 		}
 	}
 

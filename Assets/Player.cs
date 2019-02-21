@@ -20,6 +20,21 @@ public class Player : MonoBehaviour
 		myRigidbody.useGravity = false;
 	}
 
+	private void Start()
+	{
+		Invoke("EnableGravity", 2f);
+	}
+
+	private void EnableGravity()
+	{
+		/*
+		 * FIXME: This is currently a workaround as the player falls through the world
+		 * when gravity is activated before the chunk is created under the player
+		 */
+		myRigidbody.useGravity = true;
+		Debug.Log($"Enabled gravity for Player");
+	}
+
 	private void OnCollisionStay(Collision collision)
 	{
 		grounded = true;
@@ -27,17 +42,6 @@ public class Player : MonoBehaviour
 
 	private void Update()
 	{
-		/*
-		 * FIXME: This is currently a workaround as the player falls through the world
-		 * when gravity is activated before the chunk is created under the player
-		 */
-		if (Input.GetKeyDown(KeyCode.G))
-		{
-			myRigidbody.useGravity = !myRigidbody.useGravity;
-			Debug.Log($"Set rigidbody.useGravity to {myRigidbody.useGravity}");
-			myRigidbody.velocity.Set(0, 0, 0);
-		}
-
 		if (Input.GetButtonDown("Jump") && grounded && !performJump)
 		{
 			performJump = true;

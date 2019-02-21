@@ -64,17 +64,23 @@ public class ChunkGenerator : MonoBehaviour
 			int maxX = (int)playerChunkPosition.x + 8;
 			int minZ = (int)playerChunkPosition.z - 8;
 			int maxZ = (int)playerChunkPosition.z + 8;
+			SortedSet<Chunk> chunksSortedNearByPlayer = new SortedSet<Chunk>(Comparer<Chunk>.Create((chunk1, chunk2) =>
+			{
+				float chunk1DistanceToPlayer = Vector3.Distance(chunk1.ChunkID, playerChunkPosition);
+				float chunk2DistanceToPlayer = Vector3.Distance(chunk2.ChunkID, playerChunkPosition);
+				return chunk1DistanceToPlayer.CompareTo(chunk2DistanceToPlayer);
+			}));
 			for (int x = minX; x < maxX; x++)
 			{
 				for (int z = minZ; z < maxZ; z++)
 				{
 					Chunk chunk = GenerateChunk(new Vector3Int(x, 0, z));
-					/*
-					 * TODO: Maybe we can check if the chunk is already loaded,
-					 * so we do not need to update it
-					 */
-					chunkLoadingQueue.Enqueue(chunk);
+					chunksSortedNearByPlayer.Add(chunk);
 				}
+			}
+			foreach (Chunk chunk in chunksSortedNearByPlayer)
+			{
+				chunkLoadingQueue.Enqueue(chunk);
 			}
 		}
 	}

@@ -5,6 +5,7 @@ using UnityEngine;
 public class ChunkGenerator : MonoBehaviour
 {
 	public const byte CHUNK_SIZE = 16;
+	public const float BLOCK_SIZE = 0.5f;
 
 	private readonly Dictionary<Vector3Int, Chunk> chunks = new Dictionary<Vector3Int, Chunk>();
 	private readonly Queue<Chunk> chunkLoadingQueue = new Queue<Chunk>();
@@ -29,9 +30,10 @@ public class ChunkGenerator : MonoBehaviour
 
 	private void Update()
 	{
-		if (Vector3.Distance(oldTargetPosition, target.position) > CHUNK_SIZE / 2.0)
+		Vector3 targetPosition = target.position;
+		if (Vector3.Distance(oldTargetPosition, targetPosition) > CHUNK_SIZE * BLOCK_SIZE / 2.0)
 		{
-			oldTargetPosition = target.position;
+			oldTargetPosition = targetPosition;
 			targetPositionTrigger = true;
 		}
 
@@ -39,18 +41,21 @@ public class ChunkGenerator : MonoBehaviour
 		{
 			targetPositionTrigger = false;
 
-			Vector3 playerChunkPosition = target.position / CHUNK_SIZE;
+			Vector3 playerChunkPositionExact = targetPosition * (1 / BLOCK_SIZE) / CHUNK_SIZE;
+			Vector3Int playerChunkPosition = new Vector3Int((int)playerChunkPositionExact.x, (int)playerChunkPositionExact.y, (int)playerChunkPositionExact.z);
 
 			// Unload Chunks that are too far away
 			List<Vector3Int> unloadChunks = new List<Vector3Int>();
+			int numChunksInEachDirection = 4;
+			int numChunksAppartFromTargetInDirection = numChunksInEachDirection + 4;
 			foreach (KeyValuePair<Vector3Int, Chunk> item in chunks)
 			{
 				Vector3Int pos = item.Key;
 				Chunk chunk = item.Value;
-				if (Vector3.Distance(pos, playerChunkPosition) > 16)
+				if (Vector3.Distance(pos, playerChunkPosition) > numChunksAppartFromTargetInDirection)
 				{
 					unloadChunks.Add(pos);
-					Component.Destroy(chunk);
+					Destroy(chunk.gameObject);
 				}
 			}
 			foreach (Vector3Int chunkId in unloadChunks)
@@ -60,14 +65,14 @@ public class ChunkGenerator : MonoBehaviour
 			chunkLoadingQueue.Clear();
 
 			// Generate new Chunks
-			int minX = (int)playerChunkPosition.x - 8;
-			int maxX = (int)playerChunkPosition.x + 8;
-			int minZ = (int)playerChunkPosition.z - 8;
-			int maxZ = (int)playerChunkPosition.z + 8;
+			int minX = playerChunkPosition.x - numChunksInEachDirection;
+			int maxX = playerChunkPosition.x + numChunksInEachDirection;
+			int minZ = playerChunkPosition.z - numChunksInEachDirection;
+			int maxZ = playerChunkPosition.z + numChunksInEachDirection;
 			SortedSet<Chunk> chunksSortedNearByPlayer = new SortedSet<Chunk>(Comparer<Chunk>.Create((chunk1, chunk2) =>
 			{
-				float chunk1DistanceToPlayer = Vector3.Distance(chunk1.ChunkID, playerChunkPosition);
-				float chunk2DistanceToPlayer = Vector3.Distance(chunk2.ChunkID, playerChunkPosition);
+				float chunk1DistanceToPlayer = Vector3.Distance(chunk1.transform.position, targetPosition);
+				float chunk2DistanceToPlayer = Vector3.Distance(chunk2.transform.position, targetPosition);
 				return chunk1DistanceToPlayer.CompareTo(chunk2DistanceToPlayer);
 			}));
 			for (int x = minX; x < maxX; x++)
@@ -106,7 +111,7 @@ public class ChunkGenerator : MonoBehaviour
 		chunk.ChunkGenerator = this;
 		chunk.ChunkID = position;
 		go.transform.parent = gameObject.transform;
-		go.transform.localPosition = new Vector3(position.x * CHUNK_SIZE, position.y * CHUNK_SIZE, position.z * CHUNK_SIZE);
+		go.transform.localPosition = (Vector3)position * CHUNK_SIZE * BLOCK_SIZE;
 
 		chunks.Add(chunk.ChunkID, chunk);
 

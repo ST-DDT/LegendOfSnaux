@@ -41,8 +41,8 @@ public class Chunk : MonoBehaviour
 			for (int z = 0; z < ChunkGenerator.CHUNK_SIZE; z++)
 			{
 				double noise = ChunkGenerator.NoiseGenerator.Eval(
-					(chunkWorldPosition.x + x) / ChunkGenerator.CHUNK_SIZE,
-					(chunkWorldPosition.z + z) / ChunkGenerator.CHUNK_SIZE
+					(chunkWorldPosition.x + x * ChunkGenerator.BLOCK_SIZE) / ChunkGenerator.CHUNK_SIZE,
+					(chunkWorldPosition.z + z * ChunkGenerator.BLOCK_SIZE) / ChunkGenerator.CHUNK_SIZE
 				);
 				double scaledNoise = SimplexNoise.Scale(noise, 0, 10);
 				for (int y = 0; y < scaledNoise; y++)
@@ -231,14 +231,14 @@ public class Chunk : MonoBehaviour
 		bool renderTop = faceDirections.Contains(MeshFaceDirection.TOP);
 		bool renderBottom = faceDirections.Contains(MeshFaceDirection.BOTTOM);
 
-		Vector3 _000 = new Vector3(0, 0, 0) + offset;
-		Vector3 _100 = new Vector3(1, 0, 0) + offset;
-		Vector3 _110 = new Vector3(1, 1, 0) + offset;
-		Vector3 _010 = new Vector3(0, 1, 0) + offset;
-		Vector3 _001 = new Vector3(0, 0, 1) + offset;
-		Vector3 _101 = new Vector3(1, 0, 1) + offset;
-		Vector3 _111 = new Vector3(1, 1, 1) + offset;
-		Vector3 _011 = new Vector3(0, 1, 1) + offset;
+		Vector3 _000 = (new Vector3(0, 0, 0) + offset) * ChunkGenerator.BLOCK_SIZE;
+		Vector3 _100 = (new Vector3(1, 0, 0) + offset) * ChunkGenerator.BLOCK_SIZE;
+		Vector3 _110 = (new Vector3(1, 1, 0) + offset) * ChunkGenerator.BLOCK_SIZE;
+		Vector3 _010 = (new Vector3(0, 1, 0) + offset) * ChunkGenerator.BLOCK_SIZE;
+		Vector3 _001 = (new Vector3(0, 0, 1) + offset) * ChunkGenerator.BLOCK_SIZE;
+		Vector3 _101 = (new Vector3(1, 0, 1) + offset) * ChunkGenerator.BLOCK_SIZE;
+		Vector3 _111 = (new Vector3(1, 1, 1) + offset) * ChunkGenerator.BLOCK_SIZE;
+		Vector3 _011 = (new Vector3(0, 1, 1) + offset) * ChunkGenerator.BLOCK_SIZE;
 
 		List<Vector3> vertices = new List<Vector3>();
 

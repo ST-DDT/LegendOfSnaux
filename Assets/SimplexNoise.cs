@@ -79,6 +79,42 @@ public class SimplexNoise
 		return min + ((value + 1) / 2) * (max - min);
 	}
 
+	/// <summary>
+	/// Creates octaved simplex noise
+	/// </summary>
+	/// <param name="numIterations">How many iterations should be made, controls the details</param>
+	/// <param name="x">The X coordinate</param>
+	/// <param name="y">The Y coordinate</param>
+	/// <param name="persistence">Controls also details, higher values produces more roughtness</param>
+	/// <param name="scale">Lower scale values makes the noise more smooth</param>
+	/// <param name="low">The lowest possible noise value</param>
+	/// <param name="high">The highest possible noise value</param>
+	/// <returns>noise value</returns>
+	public double Octave(int numIterations, double x, double y, double persistence, double scale, double low, double high)
+	{
+		double maxAmp = 0.0;
+		double amp = 1.0;
+		double freq = scale;
+		double noise = 0.0;
+
+		// add successively smaller, higher-frequency terms
+		for (int i = 0; i < numIterations; ++i)
+		{
+			noise += Eval(x * freq, y * freq) * amp;
+			maxAmp += amp;
+			amp *= persistence;
+			freq *= 2.0;
+		}
+
+		// take the average value of the iterations
+		noise /= maxAmp;
+
+		// normalize the result
+		noise = noise * (high - low) / 2.0 + (high + low) / 2.0;
+
+		return noise;
+	}
+
 	//2D OpenSimplex Noise.
 	public double Eval(double x, double y)
 	{

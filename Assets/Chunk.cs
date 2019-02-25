@@ -38,10 +38,10 @@ public class Chunk : MonoBehaviour
 		Vector3 chunkWorldPosition = transform.position;
 		for (int x = 0; x < ChunkGenerator.CHUNK_SIZE; x++)
 		{
-			double noiseX = (chunkWorldPosition.x + x) / ChunkGenerator.CHUNK_SIZE;
+			double noiseX = (chunkWorldPosition.x + x * ChunkGenerator.BLOCK_SIZE) / ChunkGenerator.CHUNK_SIZE;
 			for (int z = 0; z < ChunkGenerator.CHUNK_SIZE; z++)
 			{
-				double noiseZ = (chunkWorldPosition.z + z) / ChunkGenerator.CHUNK_SIZE;
+				double noiseZ = (chunkWorldPosition.z + z * ChunkGenerator.BLOCK_SIZE) / ChunkGenerator.CHUNK_SIZE;
 				double noise = ChunkGenerator.NoiseGenerator.Octave(
 					numIterations: 3,
 					x: noiseX,

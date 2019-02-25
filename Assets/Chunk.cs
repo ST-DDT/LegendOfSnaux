@@ -237,14 +237,14 @@ public class Chunk : MonoBehaviour
 		bool renderTop = faceDirections.Contains(MeshFaceDirection.TOP);
 		bool renderBottom = faceDirections.Contains(MeshFaceDirection.BOTTOM);
 
-		Vector3 _000 = new Vector3(0, 0, 0) + offset;
-		Vector3 _100 = new Vector3(1, 0, 0) + offset;
-		Vector3 _110 = new Vector3(1, 1, 0) + offset;
-		Vector3 _010 = new Vector3(0, 1, 0) + offset;
-		Vector3 _001 = new Vector3(0, 0, 1) + offset;
-		Vector3 _101 = new Vector3(1, 0, 1) + offset;
-		Vector3 _111 = new Vector3(1, 1, 1) + offset;
-		Vector3 _011 = new Vector3(0, 1, 1) + offset;
+		Vector3 _000 = (new Vector3(0, 0, 0) + offset) * ChunkGenerator.BLOCK_SIZE;
+		Vector3 _100 = (new Vector3(1, 0, 0) + offset) * ChunkGenerator.BLOCK_SIZE;
+		Vector3 _110 = (new Vector3(1, 1, 0) + offset) * ChunkGenerator.BLOCK_SIZE;
+		Vector3 _010 = (new Vector3(0, 1, 0) + offset) * ChunkGenerator.BLOCK_SIZE;
+		Vector3 _001 = (new Vector3(0, 0, 1) + offset) * ChunkGenerator.BLOCK_SIZE;
+		Vector3 _101 = (new Vector3(1, 0, 1) + offset) * ChunkGenerator.BLOCK_SIZE;
+		Vector3 _111 = (new Vector3(1, 1, 1) + offset) * ChunkGenerator.BLOCK_SIZE;
+		Vector3 _011 = (new Vector3(0, 1, 1) + offset) * ChunkGenerator.BLOCK_SIZE;
 
 		List<Vector3> vertices = new List<Vector3>();
 

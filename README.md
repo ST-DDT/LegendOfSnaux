@@ -23,3 +23,22 @@ When we created the Github repository, we needed a name and we pondered about it
 After some names that were more or less too general, we somehow came to the word "Snaux". We briefly entered all the terms into Google to see if they weren't already used in any way.
 Snaux is actually a word in the [urban dictionary](https://www.urbandictionary.com/define.php?term=snaux%20day). A Snaux day is a day you have to work on, but from home. So maybe you can spend such a day with our game :P
 That's why it should be a world where you can explore, research and experience adventures.
+
+## Contributors
+
+### Developers
+
+- [ST-DDT](https://github.com/ST-DDT)
+- [Shinigami92](https://github.com/Shinigami92)
+
+### Artists
+
+- [lexuna](https://github.com/lexuna)
+- Tix
+
+## License
+
+Legend of Snaux is open sourced under two different licenses.
+
+- [Code](CODE-LICENSE.md)
+- [Assets](ASSETS-LICENSE.md)

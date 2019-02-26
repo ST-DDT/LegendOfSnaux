@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,18 +5,20 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
 	private Rigidbody myRigidbody;
+	private Vector3 input = Vector3.zero;
+	private bool grounded = false;
+	private Transform groundChecker;
 
-	public float movementSpeed = 6f;
-	public float turningSpeed = 140f;
-
-	public bool grounded = false;
-	private bool performJump = false;
+	public float speed = 5f;
+	public float runSpeedMultiplier = 1.4f;
+	public float jumpHeight = 2f;
+	public float groundDistance = 0.3f;
+	public LayerMask ground;
 
 	private void Awake()
 	{
 		myRigidbody = GetComponent<Rigidbody>();
-		myRigidbody.freezeRotation = true;
-		myRigidbody.useGravity = false;
+		groundChecker = transform.GetChild(0);
 	}
 
 	private void Start()
@@ -35,32 +36,42 @@ public class Player : MonoBehaviour
 		Debug.Log($"Enabled gravity for Player");
 	}
 
-	private void OnCollisionStay(Collision collision)
-	{
-		grounded = true;
-	}
-
 	private void Update()
 	{
-		if (Input.GetButtonDown("Jump") && grounded && !performJump)
+		// Jump
+		grounded = Physics.CheckSphere(groundChecker.position, groundDistance, ground, QueryTriggerInteraction.Ignore);
+		if (Input.GetButtonDown("Jump") && grounded)
 		{
-			performJump = true;
-			grounded = false;
+			myRigidbody.AddForce(Vector3.up * Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y), ForceMode.VelocityChange);
 		}
 
-		float horizontal = Input.GetAxis("Horizontal") * turningSpeed * Time.deltaTime;
-		transform.Rotate(Vector3.up, horizontal);
+		// Rotate
+		float rotate = Input.GetAxis("Mouse X") * 2f;
+		myRigidbody.transform.Rotate(Vector3.up * rotate);
 
-		float vertical = Input.GetAxis("Vertical") * movementSpeed * Time.deltaTime;
-		transform.Translate(0, 0, vertical);
+		// Move
+		input = Vector3.zero;
+		float strafe = Input.GetAxis("Horizontal");
+		float forward = Input.GetAxis("Vertical");
+		if (forward != 0f || strafe != 0f)
+		{
+			input.Set(strafe, 0f, forward);
+
+			float alpha = Mathf.Atan2(input.z, input.x);
+			float beta = Mathf.Atan2(transform.forward.z, transform.forward.x);
+			float gamma = alpha + beta;
+
+			input = new Vector3(Mathf.Sin(gamma), 0f, -Mathf.Cos(gamma));
+		}
 	}
 
 	private void FixedUpdate()
 	{
-		if (performJump)
+		float movementSpeed = speed;
+		if (Input.GetButton("Run"))
 		{
-			myRigidbody.AddForce(new Vector3(0, 6, 0), ForceMode.Impulse);
-			performJump = false;
+			movementSpeed *= runSpeedMultiplier;
 		}
+		myRigidbody.MovePosition(myRigidbody.position + input * movementSpeed * Time.fixedDeltaTime);
 	}
 }

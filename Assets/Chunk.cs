@@ -35,6 +35,8 @@ public class Chunk : MonoBehaviour
 
 	private void Start()
 	{
+		gameObject.layer = LayerMask.NameToLayer("Ground");
+
 		Vector3 chunkWorldPosition = transform.position;
 		for (int x = 0; x < ChunkGenerator.CHUNK_SIZE; x++)
 		{

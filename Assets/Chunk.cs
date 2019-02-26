@@ -38,14 +38,20 @@ public class Chunk : MonoBehaviour
 		Vector3 chunkWorldPosition = transform.position;
 		for (int x = 0; x < ChunkGenerator.CHUNK_SIZE; x++)
 		{
+			double noiseX = (chunkWorldPosition.x + x * ChunkGenerator.BLOCK_SIZE) / ChunkGenerator.CHUNK_SIZE;
 			for (int z = 0; z < ChunkGenerator.CHUNK_SIZE; z++)
 			{
-				double noise = ChunkGenerator.NoiseGenerator.Eval(
-					(chunkWorldPosition.x + x * ChunkGenerator.BLOCK_SIZE) / ChunkGenerator.CHUNK_SIZE,
-					(chunkWorldPosition.z + z * ChunkGenerator.BLOCK_SIZE) / ChunkGenerator.CHUNK_SIZE
+				double noiseZ = (chunkWorldPosition.z + z * ChunkGenerator.BLOCK_SIZE) / ChunkGenerator.CHUNK_SIZE;
+				double noise = ChunkGenerator.NoiseGenerator.Octave(
+					numIterations: 3,
+					x: noiseX,
+					y: noiseZ,
+					persistence: 0.4,
+					scale: 0.1,
+					low: 0,
+					high: 16
 				);
-				double scaledNoise = SimplexNoise.Scale(noise, 0, 10);
-				for (int y = 0; y < scaledNoise; y++)
+				for (int y = 0; y < noise; y++)
 				{
 					Block block = new Block()
 					{

@@ -40,10 +40,12 @@ public class Chunk : MonoBehaviour
 		Vector3 chunkWorldPosition = transform.position;
 		for (int x = 0; x < ChunkGenerator.CHUNK_SIZE; x++)
 		{
-			double noiseX = (chunkWorldPosition.x + x * ChunkGenerator.BLOCK_SIZE) / ChunkGenerator.CHUNK_SIZE;
+			float blockWorldPositionX = chunkWorldPosition.x + x * ChunkGenerator.BLOCK_SIZE;
+			double noiseX = blockWorldPositionX / ChunkGenerator.CHUNK_SIZE;
 			for (int z = 0; z < ChunkGenerator.CHUNK_SIZE; z++)
 			{
-				double noiseZ = (chunkWorldPosition.z + z * ChunkGenerator.BLOCK_SIZE) / ChunkGenerator.CHUNK_SIZE;
+				float blockWorldPositionZ = chunkWorldPosition.z + z * ChunkGenerator.BLOCK_SIZE;
+				double noiseZ = blockWorldPositionZ / ChunkGenerator.CHUNK_SIZE;
 				double noise = ChunkGenerator.NoiseGenerator.Octave(
 					numIterations: 3,
 					x: noiseX,
@@ -53,13 +55,19 @@ public class Chunk : MonoBehaviour
 					low: 0,
 					high: 16
 				);
+				/*
+				 * TODO: We can optimize this later by first checking all 4 chunk pages.
+				 * If all are in the same region, all blocks in that chunk are in the same region.
+				 */
+				Region region = ChunkGenerator.GetNearestRegion(blockWorldPositionX, blockWorldPositionZ);
 				for (int y = 0; y < noise; y++)
 				{
 					Block block = new Block()
 					{
 						Name = $"Block x:{x}, y:{y}, z:{z}",
 						Chunk = this,
-						BlockID = new Vector3Int(x, y, z)
+						BlockID = new Vector3Int(x, y, z),
+						Region = region
 					};
 
 					data.Add(block.BlockID, block);
@@ -210,7 +218,7 @@ public class Chunk : MonoBehaviour
 			{
 				CombineInstance ci = new CombineInstance
 				{
-					mesh = CreateBlockMesh(faceDirections, block.BlockID)
+					mesh = CreateBlockMesh(faceDirections, block)
 				};
 				meshes.Add(ci);
 			}
@@ -222,7 +230,7 @@ public class Chunk : MonoBehaviour
 		meshCollider.sharedMesh = meshFilter.mesh;
 	}
 
-	private static Mesh CreateBlockMesh(List<MeshFaceDirection> faceDirections, Vector3 offset)
+	private static Mesh CreateBlockMesh(List<MeshFaceDirection> faceDirections, Block block)
 	{
 		if (faceDirections.Count == 0)
 		{
@@ -239,6 +247,7 @@ public class Chunk : MonoBehaviour
 		bool renderTop = faceDirections.Contains(MeshFaceDirection.TOP);
 		bool renderBottom = faceDirections.Contains(MeshFaceDirection.BOTTOM);
 
+		Vector3 offset = block.BlockID;
 		Vector3 _000 = (new Vector3(0, 0, 0) + offset) * ChunkGenerator.BLOCK_SIZE;
 		Vector3 _100 = (new Vector3(1, 0, 0) + offset) * ChunkGenerator.BLOCK_SIZE;
 		Vector3 _110 = (new Vector3(1, 1, 0) + offset) * ChunkGenerator.BLOCK_SIZE;
@@ -394,7 +403,6 @@ public class Chunk : MonoBehaviour
 		int colorIndex = 0;
 
 		Color32 dirt = new Color32(75, 49, 49, 255);
-		Color32 grass = new Color32(150, 219, 137, 255);
 
 		if (renderFront)
 		{
@@ -434,6 +442,9 @@ public class Chunk : MonoBehaviour
 
 		if (renderTop)
 		{
+			// TODO: This is currently only for debugging
+			Color color = Color.HSVToRGB(block.Region.RelativeVoronoiPoint.x, 0.9f, 1f);
+			Color32 grass = color;
 			for (int i = 0; i < 4; i++)
 			{
 				colors[colorIndex] = grass;

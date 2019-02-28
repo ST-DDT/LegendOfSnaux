@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using xxHashSharp;
 
 public class ChunkGenerator : MonoBehaviour
 {
+	// TODO: We should increase the REGION_SIZE to about 512
+	public const int REGION_SIZE = 32;
 	public const byte CHUNK_SIZE = 16;
 	public const float BLOCK_SIZE = 0.5f;
 
+	public readonly Dictionary<Vector2Int, Region> regions = new Dictionary<Vector2Int, Region>();
 	private readonly Dictionary<Vector3Int, Chunk> chunks = new Dictionary<Vector3Int, Chunk>();
 	private readonly Queue<Chunk> chunkLoadingQueue = new Queue<Chunk>();
 	private Vector3 oldTargetPosition;
@@ -21,6 +26,27 @@ public class ChunkGenerator : MonoBehaviour
 	{
 		Debug.Log($"Initiated Chunk Generator with seed {seed}");
 		NoiseGenerator = new SimplexNoise(seed);
+
+		// TODO: This must be generated dynamically
+		for (int x = -10; x <= 10; x++)
+		{
+			for (int z = -10; z <= 10; z++)
+			{
+				byte[] buf = BitConverter.GetBytes(x).Concat(BitConverter.GetBytes(z)).ToArray();
+				uint valueX = XXHash.CalculateHash(buf, buf.Length, seed: 0);
+				uint valueZ = XXHash.CalculateHash(buf, buf.Length, seed: 1);
+				Region region = new Region()
+				{
+					Name = "",
+					RegionID = new Vector2Int(x, z),
+					RelativeVoronoiPoint = new Vector2(valueX, valueZ) / uint.MaxValue
+				};
+				regions.Add(region.RegionID, region);
+				// TODO: Remove this later, it is for debugging
+				// GameObject go = new GameObject($"Voronoi {x} {z}");
+				// go.transform.position = new Vector3(region.VoronoiWorldPoint.x, 0, region.VoronoiWorldPoint.y);
+			}
+		}
 	}
 
 	private void Start()
@@ -121,5 +147,38 @@ public class ChunkGenerator : MonoBehaviour
 	public bool TryGetChunk(Vector3Int chunkId, out Chunk chunk)
 	{
 		return this.chunks.TryGetValue(chunkId, out chunk);
+	}
+
+	public Region GetNearestRegion(float x, float z)
+	{
+		Vector2 worldPosition = new Vector2(x, z);
+		Vector2Int regionId = Vector2Int.FloorToInt(worldPosition / REGION_SIZE);
+		Region? nearestRegion = null;
+		float nearestDistance = float.MaxValue;
+		for (int dx = -1; dx <= 1; dx++)
+		{
+			for (int dz = -1; dz <= 1; dz++)
+			{
+				if (this.regions.TryGetValue(regionId + new Vector2Int(dx, dz), out Region region))
+				{
+					if (nearestRegion == null)
+					{
+						nearestRegion = region;
+						nearestDistance = Vector2.Distance(region.VoronoiWorldPoint, worldPosition);
+						continue;
+					}
+
+					float distance = Vector2.Distance(region.VoronoiWorldPoint, worldPosition);
+
+					if (nearestDistance > distance)
+					{
+						nearestDistance = distance;
+						nearestRegion = region;
+					}
+				}
+			}
+		}
+		// TODO: Generate new region, if not existent
+		return (Region)nearestRegion;
 	}
 }

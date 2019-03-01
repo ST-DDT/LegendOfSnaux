@@ -59,7 +59,12 @@ public class Chunk : MonoBehaviour
 				 * TODO: We can optimize this later by first checking all 4 chunk pages.
 				 * If all are in the same region, all blocks in that chunk are in the same region.
 				 */
-				Region region = ChunkGenerator.GetNearestRegion(blockWorldPositionX, blockWorldPositionZ);
+				float deltaVoronoi = (float)ChunkGenerator.NoiseGenerator
+					.Eval(noiseX, noiseZ) * (ChunkGenerator.REGION_SIZE / 2);
+				Region region = ChunkGenerator.GetNearestRegion(
+					blockWorldPositionX + deltaVoronoi,
+					blockWorldPositionZ + deltaVoronoi
+				);
 				for (int y = 0; y < noise; y++)
 				{
 					Block block = new Block()

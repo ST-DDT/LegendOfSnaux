@@ -133,12 +133,19 @@ public class ChunkGenerator : MonoBehaviour
 		byte[] buf = BitConverter.GetBytes(position.x).Concat(BitConverter.GetBytes(position.y)).ToArray();
 		uint valueX = XXHash.CalculateHash(buf, buf.Length, seed: Convert.ToUInt32(seed));
 		uint valueZ = XXHash.CalculateHash(buf, buf.Length, seed: Convert.ToUInt32(seed + 1));
+		Vector2 relativeVoronoiPoint = new Vector2(valueX, valueZ) / uint.MaxValue;
+		Vector2 voronoiPoint = (position + relativeVoronoiPoint);
+		float humidity = (float)SimplexNoise.Scale(NoiseGenerator.Eval(voronoiPoint.x, voronoiPoint.y), 0, 1);
+		float temperature = (float)SimplexNoise.Scale(NoiseGenerator.Eval(voronoiPoint.y, voronoiPoint.x), 0, 1);
 		region = new Region()
 		{
 			Name = "",
 			RegionID = position,
-			RelativeVoronoiPoint = new Vector2(valueX, valueZ) / uint.MaxValue
+			RelativeVoronoiPoint = relativeVoronoiPoint,
+			Humidity = humidity,
+			Temperature = temperature
 		};
+		Debug.Log($"Generated Region {region.RegionID} with Humidity: {region.Humidity} and Temperature: {region.Temperature}");
 		regions.Add(region.RegionID, region);
 		// TODO: Remove this later, it is for debugging
 		// GameObject go = new GameObject($"Voronoi {x} {z}");

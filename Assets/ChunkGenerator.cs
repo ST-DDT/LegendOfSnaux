@@ -6,8 +6,7 @@ using xxHashSharp;
 
 public class ChunkGenerator : MonoBehaviour
 {
-	// TODO: We should increase the REGION_SIZE to about 512
-	public const int REGION_SIZE = 32;
+	public const int REGION_SIZE = 512;
 	public const byte CHUNK_SIZE = 16;
 	public const float BLOCK_SIZE = 0.5f;
 
@@ -26,27 +25,6 @@ public class ChunkGenerator : MonoBehaviour
 	{
 		Debug.Log($"Initiated Chunk Generator with seed {seed}");
 		NoiseGenerator = new SimplexNoise(seed);
-
-		// TODO: This must be generated dynamically
-		for (int x = -10; x <= 10; x++)
-		{
-			for (int z = -10; z <= 10; z++)
-			{
-				byte[] buf = BitConverter.GetBytes(x).Concat(BitConverter.GetBytes(z)).ToArray();
-				uint valueX = XXHash.CalculateHash(buf, buf.Length, seed: 0);
-				uint valueZ = XXHash.CalculateHash(buf, buf.Length, seed: 1);
-				Region region = new Region()
-				{
-					Name = "",
-					RegionID = new Vector2Int(x, z),
-					RelativeVoronoiPoint = new Vector2(valueX, valueZ) / uint.MaxValue
-				};
-				regions.Add(region.RegionID, region);
-				// TODO: Remove this later, it is for debugging
-				// GameObject go = new GameObject($"Voronoi {x} {z}");
-				// go.transform.position = new Vector3(region.VoronoiWorldPoint.x, 0, region.VoronoiWorldPoint.y);
-			}
-		}
 	}
 
 	private void Start()
@@ -72,7 +50,8 @@ public class ChunkGenerator : MonoBehaviour
 
 			// Unload Chunks that are too far away
 			List<Vector3Int> unloadChunks = new List<Vector3Int>();
-			int numChunksInEachDirection = 4;
+			// TODO: Allow to set this variable from externally (such as an options menu)
+			int numChunksInEachDirection = 8;
 			int numChunksAppartFromTargetInDirection = numChunksInEachDirection + 4;
 			foreach (KeyValuePair<Vector3Int, Chunk> item in chunks)
 			{
@@ -144,6 +123,29 @@ public class ChunkGenerator : MonoBehaviour
 		return chunk;
 	}
 
+	public Region GetOrGenerateRegion(Vector2Int position)
+	{
+		if (this.regions.TryGetValue(position, out Region region))
+		{
+			return region;
+		}
+
+		byte[] buf = BitConverter.GetBytes(position.x).Concat(BitConverter.GetBytes(position.y)).ToArray();
+		uint valueX = XXHash.CalculateHash(buf, buf.Length, seed: Convert.ToUInt32(seed));
+		uint valueZ = XXHash.CalculateHash(buf, buf.Length, seed: Convert.ToUInt32(seed + 1));
+		region = new Region()
+		{
+			Name = "",
+			RegionID = position,
+			RelativeVoronoiPoint = new Vector2(valueX, valueZ) / uint.MaxValue
+		};
+		regions.Add(region.RegionID, region);
+		// TODO: Remove this later, it is for debugging
+		// GameObject go = new GameObject($"Voronoi {x} {z}");
+		// go.transform.position = new Vector3(region.VoronoiWorldPoint.x, 0, region.VoronoiWorldPoint.y);
+		return region;
+	}
+
 	public bool TryGetChunk(Vector3Int chunkId, out Chunk chunk)
 	{
 		return this.chunks.TryGetValue(chunkId, out chunk);
@@ -159,26 +161,24 @@ public class ChunkGenerator : MonoBehaviour
 		{
 			for (int dz = -1; dz <= 1; dz++)
 			{
-				if (this.regions.TryGetValue(regionId + new Vector2Int(dx, dz), out Region region))
+				Region region = GetOrGenerateRegion(regionId + new Vector2Int(dx, dz));
+
+				if (nearestRegion == null)
 				{
-					if (nearestRegion == null)
-					{
-						nearestRegion = region;
-						nearestDistance = Vector2.Distance(region.VoronoiWorldPoint, worldPosition);
-						continue;
-					}
+					nearestRegion = region;
+					nearestDistance = Vector2.Distance(region.VoronoiWorldPoint, worldPosition);
+					continue;
+				}
 
-					float distance = Vector2.Distance(region.VoronoiWorldPoint, worldPosition);
+				float distance = Vector2.Distance(region.VoronoiWorldPoint, worldPosition);
 
-					if (nearestDistance > distance)
-					{
-						nearestDistance = distance;
-						nearestRegion = region;
-					}
+				if (nearestDistance > distance)
+				{
+					nearestDistance = distance;
+					nearestRegion = region;
 				}
 			}
 		}
-		// TODO: Generate new region, if not existent
 		return (Region)nearestRegion;
 	}
 }

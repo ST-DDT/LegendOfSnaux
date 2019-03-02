@@ -60,7 +60,7 @@ public class Chunk : MonoBehaviour
 				 * If all are in the same region, all blocks in that chunk are in the same region.
 				 */
 				float deltaVoronoi = (float)ChunkGenerator.NoiseGenerator
-					.Eval(noiseX, noiseZ) * (ChunkGenerator.REGION_SIZE / 2);
+					.Eval(noiseX / 4, noiseZ / 4) * 32;
 				Region region = ChunkGenerator.GetNearestRegion(
 					blockWorldPositionX + deltaVoronoi,
 					blockWorldPositionZ + deltaVoronoi

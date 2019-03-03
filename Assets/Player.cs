@@ -23,7 +23,7 @@ public class Player : MonoBehaviour
 
 	private void Start()
 	{
-		Invoke(nameof(EnableGravity), 2f);
+		Invoke(nameof(EnableGravity), 10f);
 	}
 
 	private void EnableGravity()

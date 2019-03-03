@@ -12,7 +12,6 @@ public class WorldGenerator : MonoBehaviour
 
 	public readonly Dictionary<Vector2Int, Region> regions = new Dictionary<Vector2Int, Region>();
 	private readonly Dictionary<Vector3Int, Chunk> chunks = new Dictionary<Vector3Int, Chunk>();
-	private readonly Queue<Chunk> chunkLoadingQueue = new Queue<Chunk>();
 	private Vector3 oldPlayerPosition;
 	private bool playerPositionTrigger = true;
 
@@ -73,57 +72,19 @@ public class WorldGenerator : MonoBehaviour
 			{
 				chunks.Remove(chunkId);
 			}
-			chunkLoadingQueue.Clear();
 
 			// Generate new Chunks
 			int minX = playerChunkPosition.x - numChunksInEachDirection;
 			int maxX = playerChunkPosition.x + numChunksInEachDirection;
 			int minZ = playerChunkPosition.z - numChunksInEachDirection;
 			int maxZ = playerChunkPosition.z + numChunksInEachDirection;
-			SortedSet<Chunk> chunksSortedNearByPlayer = new SortedSet<Chunk>(Comparer<Chunk>.Create((chunk1, chunk2) =>
-			{
-				float chunk1DistanceToPlayer = Vector3.Distance(chunk1.transform.position, playerPosition);
-				float chunk2DistanceToPlayer = Vector3.Distance(chunk2.transform.position, playerPosition);
-				return chunk1DistanceToPlayer.CompareTo(chunk2DistanceToPlayer);
-			}));
 			for (int x = minX; x < maxX; x++)
 			{
 				for (int z = minZ; z < maxZ; z++)
 				{
-					Chunk chunk = GetOrGenerateChunk(new Vector3Int(x, 0, z), out CacheOrigin cache);
-					switch (cache)
-					{
-						case CacheOrigin.NewlyGenerated:
-							chunksSortedNearByPlayer.Add(chunk);
-							break;
-						case CacheOrigin.FetchedFromLocal:
-							Debug.Log($"Chunk {chunk.ChunkID} already loaded");
-							break;
-						case CacheOrigin.FetchedFromFile:
-							Debug.LogError($"CacheType {cache} currently not implemented");
-							break;
-						case CacheOrigin.FetchedFromServer:
-							Debug.LogError($"CacheType {cache} currently not implemented");
-							break;
-						default:
-							Debug.LogError($"CacheType {cache} currently not implemented");
-							break;
-					}
+					GetOrGenerateChunk(new Vector3Int(x, 0, z), out CacheOrigin cache);
 				}
 			}
-			foreach (Chunk chunk in chunksSortedNearByPlayer)
-			{
-				chunkLoadingQueue.Enqueue(chunk);
-			}
-		}
-	}
-
-	private void LateUpdate()
-	{
-		if (chunkLoadingQueue.Count > 0)
-		{
-			Chunk chunk = chunkLoadingQueue.Dequeue();
-			chunk.Dirty = true;
 		}
 	}
 
@@ -167,14 +128,12 @@ public class WorldGenerator : MonoBehaviour
 		Vector2 voronoiPoint = (position + relativeVoronoiPoint);
 		float humidity = (float)SimplexNoise.Scale(NoiseGenerator.Eval(voronoiPoint.x, voronoiPoint.y), 0d, 1d);
 		float temperature = (float)SimplexNoise.Scale(NoiseGenerator.Eval(voronoiPoint.y, voronoiPoint.x), 0d, 1d);
-		region = new Region()
-		{
-			Name = "",
-			RegionID = position,
-			RelativeVoronoiPoint = relativeVoronoiPoint,
-			Humidity = humidity,
-			Temperature = temperature
-		};
+		region = new Region(
+			name: "",
+			regionID: position,
+			relativeVoronoiPoint,
+			humidity, temperature
+		);
 		Debug.Log($"Generated Region {region.RegionID} with Humidity: {region.Humidity} and Temperature: {region.Temperature}");
 		regions.Add(region.RegionID, region);
 		// TODO: Remove this later, it is for debugging

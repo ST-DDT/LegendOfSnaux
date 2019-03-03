@@ -1,10 +1,12 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
-public class Chunk : MonoBehaviour
+public class Chunk : MonoBehaviour, IEquatable<Chunk>
 {
-	public Dictionary<Vector3Int, Block> data = new Dictionary<Vector3Int, Block>();
+	private readonly Dictionary<Vector3Int, Block> data = new Dictionary<Vector3Int, Block>();
 
 	private MeshFilter meshFilter;
 	private MeshRenderer meshRenderer;
@@ -29,9 +31,7 @@ public class Chunk : MonoBehaviour
 		gameObject.layer = LayerMask.NameToLayer("Ground");
 
 		Vector3 chunkWorldPosition = transform.position;
-		BuildChunk(chunkWorldPosition);
-
-		Dirty = true;
+		StartCoroutine(BuildChunk(chunkWorldPosition));
 	}
 
 	private void LateUpdate()
@@ -42,25 +42,39 @@ public class Chunk : MonoBehaviour
 			return;
 		}
 
-		UpdateMesh();
-
 		Dirty = false;
+
+		if (currentlyUpdating == true)
+		{
+			//Debug.Log("Skip updating the chunk mesh as an update is already in progress");
+			return;
+		}
+		currentlyUpdating = true;
+
+		StartCoroutine(UpdateMesh());
 	}
 
 	private void OnDestroy()
 	{
-		Debug.Log($"Destroy Chunk {ChunkID}");
+		//Debug.Log($"Destroy Chunk {ChunkID}");
 		meshFilter.mesh.Clear();
 	}
 
-	private void BuildChunk(Vector3 chunkWorldPosition)
+	private IEnumerator BuildChunk(Vector3 chunkWorldPosition)
 	{
+		int i = 0;
 		for (int x = 0; x < WorldGenerator.CHUNK_SIZE; x++)
 		{
 			float blockWorldPositionX = chunkWorldPosition.x + x * WorldGenerator.BLOCK_SIZE;
 			float noiseX = blockWorldPositionX / WorldGenerator.CHUNK_SIZE;
 			for (int z = 0; z < WorldGenerator.CHUNK_SIZE; z++)
 			{
+				if (i > 8)
+				{
+					i = 0;
+					yield return null;
+				}
+				i++;
 				float blockWorldPositionZ = chunkWorldPosition.z + z * WorldGenerator.BLOCK_SIZE;
 				float noiseZ = blockWorldPositionZ / WorldGenerator.CHUNK_SIZE;
 
@@ -87,33 +101,34 @@ public class Chunk : MonoBehaviour
 
 				for (int y = 0; y < noise; y++)
 				{
-					Block block = new Block()
-					{
-						Name = $"Block x:{x}, y:{y}, z:{z}",
-						Chunk = this,
-						BlockID = new Vector3Int(x, y, z),
-						Region = region
-					};
+					Block block = new Block(
+						name: $"Block x:{x}, y:{y}, z:{z}",
+						chunk: this,
+						blockID: new Vector3Int(x, y, z),
+						region: region
+					);
 
 					data.Add(block.BlockID, block);
 				}
 			}
 		}
+
+		Dirty = true;
 	}
 
-	private void UpdateMesh()
+	private IEnumerator UpdateMesh()
 	{
-		if (currentlyUpdating == true)
-		{
-			Debug.Log("Skip updating the chunk mesh as an update is already in progress");
-			return;
-		}
-		currentlyUpdating = true;
-
 		List<CombineInstance> meshes = new List<CombineInstance>();
 
+		int i = 0;
 		foreach (KeyValuePair<Vector3Int, Block> item in data)
 		{
+			if (i > 64)
+			{
+				i = 0;
+				yield return null;
+			}
+			i++;
 			Vector3Int blockId = item.Key;
 			Block block = item.Value;
 
@@ -231,7 +246,7 @@ public class Chunk : MonoBehaviour
 			{
 				CombineInstance ci = new CombineInstance
 				{
-					mesh = CreateBlockMesh(faceDirections, block)
+					mesh = CreateBlockMesh(ref faceDirections, ref block)
 				};
 				meshes.Add(ci);
 			}
@@ -245,7 +260,7 @@ public class Chunk : MonoBehaviour
 		currentlyUpdating = false;
 	}
 
-	private static Mesh CreateBlockMesh(List<MeshFaceDirection> faceDirections, Block block)
+	private static Mesh CreateBlockMesh(ref List<MeshFaceDirection> faceDirections, ref Block block)
 	{
 		if (faceDirections.Count == 0)
 		{
@@ -480,4 +495,21 @@ public class Chunk : MonoBehaviour
 
 		return mesh;
 	}
+
+	public override bool Equals(object obj) => Equals(obj as Chunk);
+
+	public bool Equals(Chunk other) => other != null && base.Equals(other) && ChunkID.Equals(other.ChunkID);
+
+	public override int GetHashCode()
+	{
+		int hashCode = -1785486011;
+		hashCode = hashCode * -1521134295 + base.GetHashCode();
+		hashCode = hashCode * -1521134295 + EqualityComparer<Vector3Int>.Default.GetHashCode(ChunkID);
+		return hashCode;
+	}
+
+	public static bool operator ==(Chunk left, Chunk right) => Equals(left, right);
+
+	public static bool operator !=(Chunk left, Chunk right) => !Equals(left, right);
+
 }

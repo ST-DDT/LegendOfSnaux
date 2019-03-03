@@ -62,12 +62,12 @@ public class Chunk : MonoBehaviour, IEquatable<Chunk>
 
 	private IEnumerator BuildChunk(Vector3 chunkWorldPosition)
 	{
-		int i = 0;
-		for (int x = 0; x < WorldGenerator.CHUNK_SIZE; x++)
+		byte i = 0;
+		for (byte x = 0; x < WorldGenerator.CHUNK_SIZE; x++)
 		{
 			float blockWorldPositionX = chunkWorldPosition.x + x * WorldGenerator.BLOCK_SIZE;
 			float noiseX = blockWorldPositionX / WorldGenerator.CHUNK_SIZE;
-			for (int z = 0; z < WorldGenerator.CHUNK_SIZE; z++)
+			for (byte z = 0; z < WorldGenerator.CHUNK_SIZE; z++)
 			{
 				if (i > 8)
 				{
@@ -99,7 +99,7 @@ public class Chunk : MonoBehaviour, IEquatable<Chunk>
 					high: 64
 				);
 
-				for (int y = 0; y < noise; y++)
+				for (byte y = 0; y < noise; y++)
 				{
 					Block block = new Block(
 						name: $"Block x:{x}, y:{y}, z:{z}",
@@ -120,7 +120,7 @@ public class Chunk : MonoBehaviour, IEquatable<Chunk>
 	{
 		List<CombineInstance> meshes = new List<CombineInstance>();
 
-		int i = 0;
+		byte i = 0;
 		foreach (KeyValuePair<Vector3Int, Block> item in data)
 		{
 			if (i > 64)

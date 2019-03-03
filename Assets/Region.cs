@@ -12,7 +12,7 @@ public struct Region
 
 	public Vector2 VoronoiWorldPoint
 	{
-		get => (RegionID + RelativeVoronoiPoint) * ChunkGenerator.REGION_SIZE;
+		get => (RegionID + RelativeVoronoiPoint) * WorldGenerator.REGION_SIZE;
 	}
 
 	public override bool Equals(object obj)

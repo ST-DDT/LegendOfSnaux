@@ -240,7 +240,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 207092824}
   m_LocalRotation: {x: 0.15039815, y: 0, z: 0, w: 0.9886255}
-  m_LocalPosition: {x: 6, y: 9, z: 4}
+  m_LocalPosition: {x: 6, y: 19, z: 4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 534669905}
@@ -341,7 +341,7 @@ Transform:
   m_Father: {fileID: 207092827}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &964553180
+--- !u!1 &1000998625
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -349,36 +349,37 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 964553182}
-  - component: {fileID: 964553181}
+  - component: {fileID: 1000998627}
+  - component: {fileID: 1000998626}
   m_Layer: 0
-  m_Name: ChunkGenerator
+  m_Name: World Generator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &964553181
+--- !u!114 &1000998626
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 964553180}
+  m_GameObject: {fileID: 1000998625}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c99abc2521e3e7b409a5ffbb37599706, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 0
-  target: {fileID: 1770308019}
---- !u!4 &964553182
+  player: {fileID: 1770308019}
+  viewDistance: 8
+--- !u!4 &1000998627
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 964553180}
+  m_GameObject: {fileID: 1000998625}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -396,7 +397,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1174324152}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: Ground Detector
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -431,7 +432,7 @@ GameObject:
   - component: {fileID: 1770216853}
   - component: {fileID: 1770216852}
   m_Layer: 0
-  m_Name: Character
+  m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -494,7 +495,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1770216851}
   m_LocalRotation: {x: 0.000000021855694, y: 0, z: -0, w: 1}
-  m_LocalPosition: {x: 6, y: 6.671, z: 10}
+  m_LocalPosition: {x: 6, y: 16.671, z: 10}
   m_LocalScale: {x: 28, y: 20, z: 29}
   m_Children:
   - {fileID: 1174324152}

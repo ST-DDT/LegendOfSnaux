@@ -1,33 +1,36 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct Region
+readonly public struct Region : IEquatable<Region>
 {
-	public string Name { get; internal set; }
-	public Vector2Int RegionID { get; internal set; }
-	public Vector2 RelativeVoronoiPoint { get; internal set; }
-
-	public float Temperature { get; internal set; }
-	public float Humidity { get; internal set; }
+	public readonly string Name;
+	public readonly Vector2Int RegionID;
+	public readonly Vector2 RelativeVoronoiPoint;
+	public readonly float Temperature;
+	public readonly float Humidity;
 
 	public Vector2 VoronoiWorldPoint
 	{
-		get => (RegionID + RelativeVoronoiPoint) * ChunkGenerator.REGION_SIZE;
+		get => (RegionID + RelativeVoronoiPoint) * WorldGenerator.REGION_SIZE;
 	}
 
-	public override bool Equals(object obj)
+	public Region(string name, Vector2Int regionID, Vector2 relativeVoronoiPoint, float temperature, float humidity)
 	{
-		if (!(obj is Region))
-		{
-			return false;
-		}
-
-		var region = (Region)obj;
-		return RegionID.Equals(region.RegionID);
+		Name = name ?? throw new ArgumentNullException(nameof(name));
+		RegionID = regionID;
+		RelativeVoronoiPoint = relativeVoronoiPoint;
+		Temperature = temperature;
+		Humidity = humidity;
 	}
+
+	public override bool Equals(object obj) => obj is Region && Equals((Region)obj);
+
+	public bool Equals(Region other) => RegionID.Equals(other.RegionID);
+
 
 	public override int GetHashCode() =>
-		1146541480 + EqualityComparer<Vector2Int>.Default.GetHashCode(RegionID);
+	   1146541480 + EqualityComparer<Vector2Int>.Default.GetHashCode(RegionID);
 
 	public static bool operator ==(Region left, Region right) => Equals(left, right);
 
